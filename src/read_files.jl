@@ -1,7 +1,9 @@
 using DataFrames
 
+file_contents(filename) = split(read(filename, String), '\n')
+
 function read_log(filename)
-	lines = split(read(filename,String),'\n')
+	lines = file_contents(filename)
 	output_start = findfirst(x -> occursin("Step", x), lines)
 	output_end = findfirst(x -> occursin("Loop", x), lines)
 
@@ -19,7 +21,7 @@ function read_log(filename)
 end
 
 function read_dump(filename)
-    lines = split(read(filename,String),'\n')
+	lines = file_contents(filename)
     timestep_indices = findall(x -> x == "ITEM: TIMESTEP", lines)
 
     line_with_columns = lines[findfirst(x -> occursin("ITEM: ATOMS", x), lines)]
@@ -34,7 +36,7 @@ function read_dump(filename)
         st = [parse.(Float64, entry) for entry in map(split, line_with_timestep)]
 
         for k in st
-            push!(df,k)
+            push!(df, k)
         end
     end
 
@@ -45,7 +47,7 @@ function read_dump(filename)
     if hasproperty(df, :id)
     	df.id = convert.(Int64, df.id)
     end
-    
+
     if hasproperty(df, :type)
     	df.type = convert.(Int64, df.type)
     end
@@ -54,14 +56,14 @@ function read_dump(filename)
 end
 
 function read_chunk(filename)
-    lines = split(read(filename,String),'\n')
-    
+	lines = file_contents(filename)
+
     headers = split(lines[3])[2:end]
-    
+
     split_lines = split.(lines[5:end-1])
     data = map(x -> parse.(Float64, x), split_lines)
 
     return DataFrame(mapreduce(permutedims, vcat, data), headers)
 end
 
-export read_log, read_dump, read_chunk
+export file_contents, read_log, read_dump, read_chunk

@@ -7,7 +7,13 @@ function read_log(filename)
 
 	split_lines = split.(lines[output_start:output_end-1])
 	headers = split_lines[1]
-	data = map(x -> parse.(Float64, x), split_lines[2:end])
+	data = Vector{Float64}[]
+	for x in split_lines[2:end]
+		if tryparse(Float64, x[1]) == nothing
+		    continue
+		end
+		push!(data, parse.(Float64, x))
+	end
 
 	return DataFrame(mapreduce(permutedims, vcat, data), headers)
 end

@@ -11,10 +11,9 @@ function read_log(filename)
 	headers = split_lines[1]
 	data = Vector{Float64}[]
 	for x in split_lines[2:end]
-		if tryparse(Float64, x[1]) == nothing
-		    continue
+		if tryparse(Float64, x[1]) != nothing
+		    push!(data, parse.(Float64, x))
 		end
-		push!(data, parse.(Float64, x))
 	end
 
 	return DataFrame(mapreduce(permutedims, vcat, data), headers)

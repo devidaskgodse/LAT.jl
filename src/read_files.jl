@@ -65,4 +65,5 @@ function read_chunk(filename)
     return DataFrame(mapreduce(permutedims, vcat, data), headers)
 end
 
-export file_contents, read_log, read_dump, read_chunk
+export file_contents
+export read_log, read_dump, read_chunk

@@ -1,6 +1,6 @@
 using DataFrames
 
-file_contents(filename) = split(read(filename, String), '\n')
+file_contents(filename) = split(read(filename, String), '\n')[1:end-1]
 
 function read_log(filename)
 	lines = file_contents(filename)
@@ -59,7 +59,7 @@ function read_chunk(filename)
 
     headers = split(lines[3])[2:end]
 
-    split_lines = split.(lines[5:end-1])
+    split_lines = split.(lines[5:end])
     data = map(x -> parse.(Float64, x), split_lines)
 
     return DataFrame(mapreduce(permutedims, vcat, data), headers)

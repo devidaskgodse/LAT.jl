@@ -1,11 +1,11 @@
 using DataFrames
 
-function file_contents(filename)
+function read_file_contents(filename)
     split(read(filename, String), '\n')[1:end-1]
 end
 
-function read_log(filename)
-    log_lines = file_contents(filename)
+function parse_log(filename)
+    log_lines = read_file_contents(filename)
     simulation_start = findfirst(x -> occursin("Step", x), log_lines)
     simulation_end = findfirst(x -> occursin("Loop", x), log_lines)
 
@@ -21,8 +21,8 @@ function read_log(filename)
     return DataFrame(mapreduce(permutedims, vcat, time_series_data), column_headers)
 end
 
-function read_dump(filename)
-    dump_lines = file_contents(filename)
+function parse_dump(filename)
+    dump_lines = read_file_contents(filename)
     timestep_markers = findall(x -> x == "ITEM: TIMESTEP", dump_lines)
 
     atoms_header = dump_lines[findfirst(x -> occursin("ITEM: ATOMS", x), dump_lines)]
@@ -60,8 +60,8 @@ function read_dump(filename)
     return trajectory_data
 end
 
-function read_chunk(filename)
-    chunk_lines = file_contents(filename)
+function parse_chunk(filename)
+    chunk_lines = read_file_contents(filename)
     chunk_headers = split(chunk_lines[3])[2:end]
 
     chunk_data_lines = split.(chunk_lines[5:end])
@@ -70,5 +70,5 @@ function read_chunk(filename)
     return DataFrame(mapreduce(permutedims, vcat, chunk_values), chunk_headers)
 end
 
-export file_contents
-export read_log, read_dump, read_chunk
+export read_file_contents
+export parse_log, parse_dump, parse_chunk

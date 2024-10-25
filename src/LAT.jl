@@ -1,5 +1,5 @@
 module LAT
 
-include("read_files.jl")
+include("parse_files.jl")
 
 end

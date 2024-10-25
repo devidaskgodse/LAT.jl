@@ -4,6 +4,8 @@ function read_file_contents(filename)
     split(read(filename, String), '\n')[1:end-1]
 end
 
+export read_file_contents
+
 function parse_log(filename)
     log_lines = read_file_contents(filename)
     simulation_start = findfirst(x -> occursin("Step", x), log_lines)
@@ -18,7 +20,10 @@ function parse_log(filename)
         end
     end
 
-    return DataFrame(mapreduce(permutedims, vcat, time_series_data), column_headers)
+    return DataFrame(
+        mapreduce(permutedims, vcat, time_series_data),
+        column_headers
+    )
 end
 
 function parse_dump(filename)
@@ -70,5 +75,4 @@ function parse_chunk(filename)
     return DataFrame(mapreduce(permutedims, vcat, chunk_values), chunk_headers)
 end
 
-export read_file_contents
 export parse_log, parse_dump, parse_chunk

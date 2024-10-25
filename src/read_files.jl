@@ -5,20 +5,20 @@ function file_contents(filename)
 end
 
 function read_log(filename)
-	lines = file_contents(filename)
-	output_start = findfirst(x -> occursin("Step", x), lines)
-	output_end = findfirst(x -> occursin("Loop", x), lines)
+    log_lines = file_contents(filename)
+    simulation_start = findfirst(x -> occursin("Step", x), log_lines)
+    simulation_end = findfirst(x -> occursin("Loop", x), log_lines)
 
-	split_lines = split.(lines[output_start:output_end-1])
-	headers = split_lines[1]
-	data = Vector{Float64}[]
-	for x in split_lines[2:end]
-		if tryparse(Float64, x[1]) != nothing
-		    push!(data, parse.(Float64, x))
-		end
-	end
+    parsed_lines = split.(log_lines[simulation_start:simulation_end-1])
+    column_headers = parsed_lines[1]
+    time_series_data = Vector{Float64}[]
+    for log_entry in parsed_lines[2:end]
+        if tryparse(Float64, log_entry[1]) != nothing
+            push!(time_series_data, parse.(Float64, log_entry))
+        end
+    end
 
-	return DataFrame(mapreduce(permutedims, vcat, data), headers)
+    return DataFrame(mapreduce(permutedims, vcat, time_series_data), column_headers)
 end
 
 function read_dump(filename)

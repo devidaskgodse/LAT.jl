@@ -104,3 +104,23 @@ function find_matching_files(directory, include_pattern, exclude_pattern)
 end
 
 export find_matching_files
+
+function combine_dataframes(parser_function, directory, pattern)
+    matching_files = find_matching_files(directory, pattern)
+    dataframes = map(parser_function, matching_files)
+
+    return unique(reduce(vcat, dataframes))
+end
+
+function combine_dataframes(parser_function, directory, include_pattern,
+    exclude_pattern)
+
+    matching_files = find_matching_files(directory, include_pattern,
+        exclude_pattern)
+    dataframes = map(parser_function, matching_files)
+
+    return unique(reduce(vcat, dataframes))
+end
+
+export combine_dataframes
+

@@ -22,38 +22,42 @@ function read_log(filename)
 end
 
 function read_dump(filename)
-	lines = file_contents(filename)
-    timestep_indices = findall(x -> x == "ITEM: TIMESTEP", lines)
+    dump_lines = file_contents(filename)
+    timestep_markers = findall(x -> x == "ITEM: TIMESTEP", dump_lines)
 
-    line_with_columns = lines[findfirst(x -> occursin("ITEM: ATOMS", x), lines)]
-    column_names = split(line_with_columns, " ")[3:end]
-    pushfirst!(column_names, "timestep")
+    atoms_header = dump_lines[findfirst(x -> occursin("ITEM: ATOMS", x), dump_lines)]
+    atom_properties = split(atoms_header, " ")[3:end]
+    pushfirst!(atom_properties, "timestep")
 
-    df = DataFrame([name => Float64[] for name in column_names])
+    trajectory_data = DataFrame([name => Float64[] for name in atom_properties])
 
-    for i in 1:length(timestep_indices)-1
-        line = lines[timestep_indices[i]+9:timestep_indices[i+1]-1]
-        line_with_timestep = [lines[timestep_indices[i]+1] * " " * k for k in line]
-        st = [parse.(Float64, entry) for entry in map(split, line_with_timestep)]
+    for t in 1:length(timestep_markers)-1
+        atom_lines = dump_lines[timestep_markers[t]+9:timestep_markers[t+1]-1]
+        timestepped_lines = [
+            dump_lines[timestep_markers[t]+1] * " " * line for line in atom_lines
+        ]
+        atom_coords = [
+            parse.(Float64, entry) for entry in map(split, timestepped_lines)
+        ]
 
-        for k in st
-            push!(df, k)
+        for atom_entry in atom_coords
+            push!(trajectory_data, atom_entry)
         end
     end
 
-    if hasproperty(df, :timestep)
-    	df.timestep = convert.(Int64, df.timestep)
+    if hasproperty(trajectory_data, :timestep)
+        trajectory_data.timestep = convert.(Int64, trajectory_data.timestep)
     end
 
-    if hasproperty(df, :id)
-    	df.id = convert.(Int64, df.id)
+    if hasproperty(trajectory_data, :id)
+        trajectory_data.id = convert.(Int64, trajectory_data.id)
     end
 
-    if hasproperty(df, :type)
-    	df.type = convert.(Int64, df.type)
+    if hasproperty(trajectory_data, :type)
+        trajectory_data.type = convert.(Int64, trajectory_data.type)
     end
 
-    return df
+    return trajectory_data
 end
 
 function read_chunk(filename)

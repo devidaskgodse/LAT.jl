@@ -124,3 +124,28 @@ end
 
 export combine_dataframes
 
+function parse_logs(directory, pattern)
+    combine_dataframes(parse_log, directory, pattern)
+end
+
+function parse_logs(directory, include_pattern, exclude_pattern)
+    combine_dataframes(parse_log, directory, include_pattern, exclude_pattern)
+end
+
+function parse_dumps(directory, pattern)
+    combine_dataframes(parse_dump, directory, pattern)
+end
+
+function parse_dumps(directory, include_pattern, exclude_pattern)
+    combine_dataframes(parse_dump, directory, include_pattern, exclude_pattern)
+end
+
+function parse_chunks(directory, pattern)
+    combine_dataframes(parse_chunk, directory, pattern)
+end
+
+function parse_chunks(directory, include_pattern, exclude_pattern)
+    combine_dataframes(parse_chunk, directory, include_pattern, exclude_pattern)
+end
+
+export parse_logs, parse_dumps, parse_chunks

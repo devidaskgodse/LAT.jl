@@ -61,14 +61,13 @@ function read_dump(filename)
 end
 
 function read_chunk(filename)
-	lines = file_contents(filename)
+    chunk_lines = file_contents(filename)
+    chunk_headers = split(chunk_lines[3])[2:end]
 
-    headers = split(lines[3])[2:end]
+    chunk_data_lines = split.(chunk_lines[5:end])
+    chunk_values = map(x -> parse.(Float64, x), chunk_data_lines)
 
-    split_lines = split.(lines[5:end])
-    data = map(x -> parse.(Float64, x), split_lines)
-
-    return DataFrame(mapreduce(permutedims, vcat, data), headers)
+    return DataFrame(mapreduce(permutedims, vcat, chunk_values), chunk_headers)
 end
 
 export file_contents

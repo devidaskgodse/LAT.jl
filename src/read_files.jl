@@ -1,6 +1,8 @@
 using DataFrames
 
-file_contents(filename) = split(read(filename, String), '\n')[1:end-1]
+function file_contents(filename)
+    split(read(filename, String), '\n')[1:end-1]
+end
 
 function read_log(filename)
 	lines = file_contents(filename)

@@ -76,3 +76,31 @@ function parse_chunk(filename)
 end
 
 export parse_log, parse_dump, parse_chunk
+
+function find_matching_files(directory, pattern)
+    matched_files = filter(contains(pattern), readdir(directory, join=true))
+
+    if isempty(matched_files)
+        throw("""
+            No files found in '$directory' that match the input pattern $pattern
+        """)
+    end
+
+    return matched_files
+end
+
+function find_matching_files(directory, include_pattern, exclude_pattern)
+    matched_files = filter(contains(include_pattern), readdir(directory, join=true))
+    filter!(!contains(exclude_pattern), matched_files)
+
+    if isempty(matched_files)
+        throw("""
+            No files found in '$directory' that match the pattern $include_pattern
+            and exclude pattern $exclude_pattern
+        """)
+    end
+
+    return matched_files
+end
+
+export find_matching_files

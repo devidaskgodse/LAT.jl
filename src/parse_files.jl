@@ -76,12 +76,18 @@ end
 
 function parse_chunk(filename)
     chunk_lines = read_file_contents(filename)
-    chunk_headers = split(chunk_lines[3])[2:end]
+    end_timestamp = split(chunk_lines[4])[1]
+    raw_headers = split(chunk_lines[3])[2:end]
+    
+    # A regex replace that removes any instance of the following:
+    # "c_", "v_", "\[", "\]"
+    cleaned_headers = replace.(raw_headers, r"c_|v_|\[|\]" => "")
+    final_headers = vcat(["last_timestep"], cleaned_headers)
 
-    chunk_data_lines = split.(chunk_lines[5:end])
-    chunk_values = map(x -> parse.(Float64, x), chunk_data_lines)
+    parsed_rows = split.(chunk_lines[5:end])
+    chunk_data = map(x -> parse.(Float64, vcat([end_timestamp],x)), parsed_rows)
 
-    return DataFrame(mapreduce(permutedims, vcat, chunk_values), chunk_headers)
+    return DataFrame(mapreduce(permutedims, vcat, chunk_data), final_headers)
 end
 
 export parse_log, parse_dump, parse_chunk

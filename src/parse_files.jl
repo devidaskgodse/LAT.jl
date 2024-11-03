@@ -8,29 +8,37 @@ export read_file_contents
 
 function parse_log(filename)
     log_lines = read_file_contents(filename)
-    simulation_start = findfirst(x -> occursin("Step", x), log_lines)
-    simulation_end = findfirst(x -> occursin("Loop", x), log_lines)
+    
+    log_start_index = findfirst(x -> occursin("Step", x), log_lines)
+    log_end_index = findfirst(x -> occursin("Loop", x), log_lines)
 
-    parsed_lines = split.(log_lines[simulation_start:simulation_end-1])
+    parsed_lines = split.(log_lines[log_start_index:log_end_index-1])
+
     column_headers = parsed_lines[1]
-    time_series_data = Vector{Float64}[]
+
+    parsed_data = Vector{Float64}[]
     for log_entry in parsed_lines[2:end]
         if tryparse(Float64, log_entry[1]) != nothing
-            push!(time_series_data, parse.(Float64, log_entry))
+            push!(parsed_data, parse.(Float64, log_entry))
         end
     end
 
     return DataFrame(
-        mapreduce(permutedims, vcat, time_series_data),
+        mapreduce(permutedims, vcat, parsed_data),
         column_headers
     )
 end
 
 function parse_dump(filename)
     dump_lines = read_file_contents(filename)
+    
+    
     timestep_markers = findall(x -> x == "ITEM: TIMESTEP", dump_lines)
+    
 
-    atoms_header = dump_lines[findfirst(x -> occursin("ITEM: ATOMS", x), dump_lines)]
+    atoms_header = dump_lines[
+        findfirst(x -> occursin("ITEM: ATOMS", x), dump_lines)
+    ]
     atom_properties = split(atoms_header, " ")[3:end]
     pushfirst!(atom_properties, "timestep")
 
@@ -39,7 +47,8 @@ function parse_dump(filename)
     for t in 1:length(timestep_markers)-1
         atom_lines = dump_lines[timestep_markers[t]+9:timestep_markers[t+1]-1]
         timestepped_lines = [
-            dump_lines[timestep_markers[t]+1] * " " * line for line in atom_lines
+            dump_lines[timestep_markers[t]+1] * " " * 
+            row_data for row_data in atom_lines
         ]
         atom_coords = [
             parse.(Float64, entry) for entry in map(split, timestepped_lines)

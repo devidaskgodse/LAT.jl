@@ -72,46 +72,36 @@ Reads a dump file containing timestep and atom data and returns it as a
 function parse_dump(filename)
     dump_lines = read_file_contents(filename)
     
-    
     timestep_markers = findall(x -> x == "ITEM: TIMESTEP", dump_lines)
+    atoms_header = findfirst(x -> occursin("ITEM: ATOMS", x), dump_lines)
     
+    # trajectory data range: atoms_headers[index]+1:timestep_markers[index]-1
+    # assuming
+    # length(timestep_markers) == length(trajectory_data_starts)
+    # length(timestep_markers) == length(trajectory_data_ends)
+    timestep_data = timestep_markers .+ 1
+    trajectory_data_starts = timestep_markers .+ 9
+    trajectory_data_ends = push!(timestep_markers[2:end], length(dump_lines)+1) .-1
 
-    atoms_header = dump_lines[
-        findfirst(x -> occursin("ITEM: ATOMS", x), dump_lines)
-    ]
-    atom_properties = split(atoms_header, " ")[3:end]
-    pushfirst!(atom_properties, "timestep")
+    column_names = split(dump_lines[atoms_header], " ")[3:end]
+    pushfirst!(column_names, "timestep")
 
-    trajectory_data = DataFrame([name => Float64[] for name in atom_properties])
-
-    for t in 1:length(timestep_markers)-1
-        atom_lines = dump_lines[timestep_markers[t]+9:timestep_markers[t+1]-1]
-        timestepped_lines = [
-            dump_lines[timestep_markers[t]+1] * " " * 
-            row_data for row_data in atom_lines
+    trajectory_data = DataFrame([name => Float64[] for name in column_names])
+    
+    for index in 1:length(timestep_data)
+        current_timestep = dump_lines[timestep_data[index]]
+        trajectory_data_start = trajectory_data_starts[index]
+        trajectory_data_end = trajectory_data_ends[index]
+        
+        current_timestep_data = current_timestep .* " " .* dump_lines[
+            trajectory_data_start:trajectory_data_end
         ]
-        atom_coords = [
-            parse.(Float64, entry) for entry in map(split, timestepped_lines)
-        ]
 
-        for atom_entry in atom_coords
-            push!(trajectory_data, atom_entry)
-        end
+        array = map(x -> parse.(Float64, split(x)), current_timestep_data)
+        map(x -> push!(trajectory_data, x), array)
     end
 
-    if hasproperty(trajectory_data, :timestep)
-        trajectory_data.timestep = convert.(Int64, trajectory_data.timestep)
-    end
-
-    if hasproperty(trajectory_data, :id)
-        trajectory_data.id = convert.(Int64, trajectory_data.id)
-    end
-
-    if hasproperty(trajectory_data, :type)
-        trajectory_data.type = convert.(Int64, trajectory_data.type)
-    end
-
-    return trajectory_data
+    return sort!(trajectory_data)
 end
 
 """

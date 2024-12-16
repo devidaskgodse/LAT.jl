@@ -114,6 +114,24 @@ function parse_dump(filename)
     return trajectory_data
 end
 
+"""
+    parse_chunk(filename::String) -> DataFrame
+
+Reads a chunk of data from the specified file and returns it as a `DataFrame`.
+
+# Arguments
+- `filename::String`: The name of the file containing the chunk of data.
+
+# Returns
+- A `DataFrame` with parsed numerical data where the headers are cleaned by
+  removing any instance of `"c_"`, `"v_"`, `"["`, or `"]"`. The first column is
+  labeled `"last_timestep"`.
+
+# Details
+- The function reads in lines from the file, extracts and cleans the headers,
+  and parses the data into a numerical format. The parsed data is combined
+  with the timestamp (extracted from line 4) and stored in a `DataFrame`.
+"""
 function parse_chunk(filename)
     chunk_lines = read_file_contents(filename)
     end_timestamp = split(chunk_lines[4])[1]

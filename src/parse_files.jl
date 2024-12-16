@@ -6,6 +6,24 @@ end
 
 export read_file_contents
 
+"""
+    parse_log(filename::String) -> DataFrame
+
+Reads a log file containing step data and returns it as a `DataFrame`.
+
+# Arguments
+- `filename::String`: The name of the log file.
+
+# Returns
+- A `DataFrame` where the first row contains the headers (parsed from the log
+  file) and subsequent rows contain parsed numerical data. The columns are
+  labeled based on the headers.
+
+# Details
+- The function looks for the lines containing "Step" and "Loop" to identify
+  the section of the file with the log data. It then parses the lines between
+  these markers and returns the parsed data as a `DataFrame`.
+"""
 function parse_log(filename)
     log_lines = read_file_contents(filename)
     

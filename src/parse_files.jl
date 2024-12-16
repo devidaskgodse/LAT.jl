@@ -47,6 +47,28 @@ function parse_log(filename)
     )
 end
 
+"""
+    parse_dump(filename::String) -> DataFrame
+
+Reads a dump file containing timestep and atom data and returns it as a
+`DataFrame`.
+
+# Arguments
+- `filename::String`: The name of the dump file.
+
+# Returns
+- A `DataFrame` where each row contains atom data associated with a particular
+  timestep. The columns are based on the atom data header, with an additional
+  `"timestep"` column.
+
+# Details
+- The function identifies all lines containing "ITEM: TIMESTEP" to determine
+  where each timestep's data begins. It extracts atom column headers from the
+  "ITEM: ATOMS" line and appends the `"timestep"` column to these headers.
+- The atom data for each timestep is parsed and stored in the DataFrame.
+  Certain columns (e.g., `timestep`, `id`, `type`) are converted to integers
+  if they exist in the DataFrame.
+"""
 function parse_dump(filename)
     dump_lines = read_file_contents(filename)
     

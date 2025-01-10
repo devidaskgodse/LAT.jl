@@ -48,7 +48,7 @@ end
 
 function create_paths(paths)
     for (key, path) in paths
-        if !isdir(path)
+        if !ispath(path)
             mkpath(path)
         end
     end
